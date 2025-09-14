@@ -67,7 +67,7 @@ const RegisterForm = () => {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
           <p className="mt-2 text-gray-600">
-            Start your analytics journey today
+            Always keep your data safe and secure
           </p>
         </div>
 
