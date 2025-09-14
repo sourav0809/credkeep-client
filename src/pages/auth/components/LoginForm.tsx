@@ -4,10 +4,19 @@ import { Label } from "@/common/components/ui/label";
 import { Input } from "@/common/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/common/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { useAppDispatch } from "@/common/hooks/useAppDispatch";
+import { validateForm } from "@/common/helpers/valdiation";
+import { loginSchema } from "../schema/auth";
+import { loginAct } from "../action-creators/login.act";
+import { getErrorMessage } from "@/common/helpers/common";
+import { navigationPaths } from "@/common/constants/url.const";
 
 const LoginForm = () => {
-  const [isSubmitting] = useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -17,6 +26,33 @@ const LoginForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validate form (automatically toasts first error if any)
+    const result = validateForm(loginSchema, formData);
+    if (!result.success) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const { data } = result as any;
+      await dispatch(loginAct(data as any));
+      navigate(navigationPaths.DASHBOARD);
+      toast.success("Welcome back!");
+      setFormData({
+        email: "",
+        password: "",
+      });
+      setShowPassword(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
@@ -28,7 +64,7 @@ const LoginForm = () => {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={() => {}}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="flex flex-col gap-1">
               <Label className=" text-base font-medium text-gray-700">
