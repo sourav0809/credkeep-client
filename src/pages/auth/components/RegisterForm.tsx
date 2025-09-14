@@ -1,13 +1,27 @@
 import { Button } from "@/common/components/ui/button";
 import { Input } from "@/common/components/ui/input";
 import { Label } from "@/common/components/ui/label";
-import type { RegisterFormData } from "@/pages/auth/schema/auth";
+import { validateForm } from "@/common/helpers/valdiation";
+import {
+  registerSchema,
+  type RegisterFormData,
+} from "@/pages/auth/schema/auth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { register } from "../action-creators/register.act";
+import { useAppDispatch } from "@/common/hooks/useAppDispatch";
+import { getErrorMessage } from "@/common/helpers/common";
+import { navigationPaths } from "@/common/constants/url.const";
+import { cookieKeys } from "@/constant/keyConstants";
+import Cookies from "js-cookie";
 
 const RegisterForm = () => {
-  const [isSubmitting] = useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
@@ -20,6 +34,34 @@ const RegisterForm = () => {
     setFormData((prev: RegisterFormData) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const result = validateForm(registerSchema, formData);
+    if (!result.success) {
+      toast.error(result.errors?._form);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const { data } = result as any;
+      await dispatch(register(data as any));
+      navigate(navigationPaths.DASHBOARD);
+      toast.success("Account created successfully");
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
+      setShowPassword(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
       <div className="w-full max-w-lg space-y-8">
@@ -30,11 +72,25 @@ const RegisterForm = () => {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={() => {}}>
-          <div className="space-y-4">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-3">
             <div className="flex flex-col gap-1">
               <Label className=" text-base font-medium text-gray-700">
-                Enter Your Email
+                Name
+              </Label>
+              <Input
+                name="name"
+                type="text"
+                autoFocus
+                placeholder="Enter your name"
+                value={formData.name}
+                onChange={handleChange}
+                className=" w-full py-2.5 h-10"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className=" text-base font-medium text-gray-700">
+                Email
               </Label>
               <Input
                 name="email"
@@ -48,7 +104,7 @@ const RegisterForm = () => {
             </div>
             <div className="flex flex-col gap-1 relative">
               <Label className="text-base font-medium text-gray-700">
-                Enter Your Password
+                Password
               </Label>
               <Input
                 name="password"
@@ -86,7 +142,7 @@ const RegisterForm = () => {
                 Just a Sec ...
               </>
             ) : (
-              "Login"
+              "Register"
             )}
           </Button>
         </form>

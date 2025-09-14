@@ -12,6 +12,10 @@ const PrivateRoutes = [
         element: <PrivateLayout />,
         children: [
           {
+            path: navigationPaths.HOME,
+            element: <Dashboard />,
+          },
+          {
             path: navigationPaths.DASHBOARD,
             element: <Dashboard />,
           },

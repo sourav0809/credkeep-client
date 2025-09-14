@@ -28,19 +28,25 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       setAuthTokenOnAxiosInterceptors(action.payload.authToken);
       state.authToken = action.payload.authToken;
-      Cookies.set(cookieKeys.AUTH_TOKEN, action.payload.authToken);
-      return state;
     },
     setUser: (state, action) => {
-      state.user = { ...state.user, ...action.payload };
-      return state;
+      const { authToken, ...user } = action.payload;
+      setAuthTokenOnAxiosInterceptors(action.payload.authToken);
+      state.user = { ...state.user, ...user };
+      state.isAuthenticated = true;
+      state.authToken = authToken;
     },
     setIsAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload;
     },
-    logout: () => {
+    logout: (state) => {
+      state.isAuthenticated = false;
+      state.user = {
+        id: "",
+        name: "",
+        email: "",
+      };
       Cookies.remove(cookieKeys.AUTH_TOKEN);
-      return initialState;
     },
   },
 });
