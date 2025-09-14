@@ -6,7 +6,7 @@ function AuthGuard() {
     (state) => state.authSlice.isAuthenticated
   );
 
-  return !isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 }
 
 export default AuthGuard;
