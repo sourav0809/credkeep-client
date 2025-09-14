@@ -1,4 +1,5 @@
 import { ZodType, ZodError } from "zod";
+import { toast } from "sonner";
 
 export type ValidationResult<T> = {
   success: boolean;
@@ -24,11 +25,21 @@ export const validateForm = <T>(
           errors[issue.path[0]] = issue.message;
         }
       });
+
+      // Automatically toast the first error
+      const firstError = Object.values(errors)[0];
+      if (firstError) {
+        toast.error(firstError);
+      }
+
       return {
         success: false,
         errors,
       };
     }
+
+    // Handle unexpected errors
+    toast.error("An unexpected error occurred");
     return {
       success: false,
       errors: {

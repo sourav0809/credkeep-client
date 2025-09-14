@@ -14,8 +14,6 @@ import { register } from "../action-creators/register.act";
 import { useAppDispatch } from "@/common/hooks/useAppDispatch";
 import { getErrorMessage } from "@/common/helpers/common";
 import { navigationPaths } from "@/common/constants/url.const";
-import { cookieKeys } from "@/constant/keyConstants";
-import Cookies from "js-cookie";
 
 const RegisterForm = () => {
   const dispatch = useAppDispatch();
@@ -37,9 +35,10 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Validate form (automatically toasts first error if any)
     const result = validateForm(registerSchema, formData);
+    console.log(result);
     if (!result.success) {
-      toast.error(result.errors?._form);
       return;
     }
 
